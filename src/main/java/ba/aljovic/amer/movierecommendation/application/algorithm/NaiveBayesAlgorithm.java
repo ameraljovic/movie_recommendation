@@ -1,7 +1,7 @@
 package ba.aljovic.amer.movierecommendation.application.algorithm;
 
-import ba.aljovic.amer.movierecommendation.application.ClusteredRating;
-import ba.aljovic.amer.movierecommendation.application.UserRating;
+import ba.aljovic.amer.movierecommendation.application.model.ClusteredRating;
+import ba.aljovic.amer.movierecommendation.application.model.UserRating;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.classification.NaiveBayes;
 import org.apache.spark.mllib.classification.NaiveBayesModel;

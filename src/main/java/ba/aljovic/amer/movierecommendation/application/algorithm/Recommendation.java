@@ -1,6 +1,5 @@
 package ba.aljovic.amer.movierecommendation.application.algorithm;
 
-import ba.aljovic.amer.movierecommendation.application.algorithm.RecommendationAlgorithm;
 import ba.aljovic.amer.movierecommendation.application.model.UserRating;
 import ba.aljovic.amer.movierecommendation.application.utils.Utils;
 import org.apache.commons.lang.ArrayUtils;
@@ -23,13 +22,10 @@ import java.util.List;
 
 public class Recommendation
 {
-    public static final double DEFAULT_SMOOTHING_PARAM = 1.0;
-
     private final JavaSparkContext sparkContext;
+    private final RecommendationAlgorithm algorithm;
 
-    private RecommendationAlgorithm algorithm;
-
-    public Recommendation(String master, RecommendationAlgorithm algorithm)
+    public Recommendation(final String master, final RecommendationAlgorithm algorithm)
     {
         SparkConf conf = new SparkConf().setAppName("Naive Bayes").setMaster(master);
         sparkContext = new JavaSparkContext(conf);
@@ -45,9 +41,8 @@ public class Recommendation
 
         // Train KMeans model
         final KMeansModel ratingClusters = getKMeansModel(trainingData);
-        double rmse = algorithm.evaluate(trainingData, testData, ratingClusters);
 
-        return rmse;
+        return algorithm.evaluate(trainingData, testData, ratingClusters);
     }
 
     private KMeansModel getKMeansModel(JavaRDD<UserRating> trainingData)

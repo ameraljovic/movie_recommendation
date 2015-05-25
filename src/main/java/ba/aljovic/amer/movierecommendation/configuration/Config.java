@@ -1,6 +1,8 @@
 package ba.aljovic.amer.movierecommendation.configuration;
 
-import ba.aljovic.amer.movierecommendation.application.NaiveBayesApp;
+import ba.aljovic.amer.movierecommendation.application.algorithm.NaiveBayesAlgorithm;
+import ba.aljovic.amer.movierecommendation.application.algorithm.Recommendation;
+import ba.aljovic.amer.movierecommendation.application.algorithm.RecommendationAlgorithm;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,9 +10,14 @@ import org.springframework.context.annotation.Configuration;
 public class Config
 {
     @Bean
-    public NaiveBayesApp naiveBayesApp()
+    public Recommendation recommendation()
     {
-        NaiveBayesApp naiveBayesApp = new NaiveBayesApp("local[1]");
-        return naiveBayesApp;
+        return new Recommendation("local[1]", naiveBayesAlgorithm());
+    }
+
+    @Bean
+    public RecommendationAlgorithm naiveBayesAlgorithm()
+    {
+        return new NaiveBayesAlgorithm(1);
     }
 }
