@@ -25,6 +25,7 @@ dependencies {
     compile ('org.springframework.boot:spring-boot-starter') {
         exclude module : 'spring-boot-starter-logging'
     }
+    compile ('org.springframework.boot:spring-boot-starter-test')
 }
 
 idea {

@@ -1,17 +1,35 @@
 package ba.aljovic.amer.movierecommendation.application;
 
+import ba.aljovic.amer.movierecommendation.Application;
+import ba.aljovic.amer.movierecommendation.application.algorithm.Recommendation;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
+@RunWith (SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration (classes = Application.class)
 public class NaiveBayesTest
 {
+    @Autowired
+    Recommendation recommendation;
+
     @Test
-    public void test() throws FileNotFoundException
+    public void testOneUser() throws IOException
     {
-        NaiveBayesApp naiveBayesApp = new NaiveBayesApp("local[1]");
-        Double result = naiveBayesApp.calculate(
-                "movie-ratings-training/Tejas-Nair.txt", "movie-ratings-test/Tejas-Nair.txt", 0.1);
+
+        Double result = recommendation.evaluateRecommendationAlgorithm(
+                "user-ratings-training/addy_4.txt", "user-ratings-test/addy_4.txt");
+        System.out.println("Result: " + result);
+    }
+
+    @Test
+    public void testManyUsers() throws IOException
+    {
+        Double result = recommendation.evaluateManyUsers("user-ratings-training", "user-ratings-test");
         System.out.println("Result: " + result);
     }
 }
