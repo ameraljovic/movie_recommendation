@@ -38,4 +38,10 @@ public class NaiveBayesAlgorithm implements RecommendationAlgorithm
                 })
                 .reduce((a, b) -> a + b) / trainingData.count();
     }
+
+    @Override
+    public String getName()
+    {
+        return "Naive Bayes";
+    }
 }

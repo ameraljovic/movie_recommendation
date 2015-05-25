@@ -13,17 +13,16 @@ import java.io.IOException;
 
 @RunWith (SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration (classes = Application.class)
-@ActiveProfiles("algorithm-naiveBayes")
-public class NaiveBayesTest
+@ActiveProfiles("algorithm-SVM")
+public class SVMTest
 {
     @Autowired
-    Recommendation recommendation;
+    Recommendation svmRecommendation;
 
     @Test
     public void testOneUser() throws IOException
     {
-
-        Double result = recommendation.evaluateRecommendationAlgorithm(
+        Double result = svmRecommendation.evaluateRecommendationAlgorithm(
                 "user-ratings-training/addy_4.txt", "user-ratings-test/addy_4.txt");
         System.out.println("Result: " + result);
     }
@@ -31,7 +30,7 @@ public class NaiveBayesTest
     @Test
     public void testManyUsers() throws IOException
     {
-        Double result = recommendation.evaluateManyUsers("user-ratings-training", "user-ratings-test");
+        Double result = svmRecommendation.evaluateManyUsers("user-ratings-training", "user-ratings-test");
         System.out.println("Result: " + result);
     }
 }

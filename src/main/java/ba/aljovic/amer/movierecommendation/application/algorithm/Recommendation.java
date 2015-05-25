@@ -22,15 +22,25 @@ import java.util.List;
 
 public class Recommendation
 {
-    private final JavaSparkContext sparkContext;
+    private JavaSparkContext sparkContext;
+
     private final RecommendationAlgorithm algorithm;
 
-    public Recommendation(final String master, final RecommendationAlgorithm algorithm)
-    {
-        SparkConf conf = new SparkConf().setAppName("Naive Bayes").setMaster(master);
-        sparkContext = new JavaSparkContext(conf);
+    private final Integer numberOfClusters;
 
+    private final Integer numberOfIterations;
+
+
+
+    public Recommendation(final String master, final RecommendationAlgorithm algorithm, Integer numberOfClusters,
+                          Integer numberOfIterations)
+    {
         this.algorithm = algorithm;
+        this.numberOfClusters = numberOfClusters;
+        this.numberOfIterations = numberOfIterations;
+
+        SparkConf configuration = new SparkConf().setAppName(algorithm.getName()).setMaster(master);
+        this.sparkContext = new JavaSparkContext(configuration);
     }
 
     public Double evaluateRecommendationAlgorithm(String training, String test)
@@ -50,7 +60,7 @@ public class Recommendation
         JavaRDD<Vector> trainingRatings = trainingData
                 .map(UserRating::getData)
                 .map(mapToVector());
-        return KMeans.train(trainingRatings.rdd(), 5, 20);
+        return KMeans.train(trainingRatings.rdd(), numberOfClusters, numberOfIterations);
     }
 
 
@@ -100,4 +110,48 @@ public class Recommendation
         Integer[] array = list.toArray(new Integer[list.size()]);
         return ArrayUtils.toPrimitive(array);
     }
+
+    //region BUILDER
+    public static class RecommendationBuilder
+    {
+        private RecommendationAlgorithm algorithm;
+        private String master = "local[1]";
+        private Integer numberOfClusters = 5;
+        private Integer numberOfIterations = 20;
+
+        public RecommendationBuilder(RecommendationAlgorithm algorithm)
+        {
+            this.algorithm = algorithm;
+        }
+
+        public RecommendationBuilder setMaster(String master)
+        {
+            this.master = master;
+            return this;
+        }
+
+        public RecommendationBuilder setAlgorithm(RecommendationAlgorithm algorithm)
+        {
+            this.algorithm = algorithm;
+            return this;
+        }
+
+        public RecommendationBuilder setNumberOfClusters(Integer numberOfClusters)
+        {
+            this.numberOfClusters = numberOfClusters;
+            return this;
+        }
+
+        public RecommendationBuilder setNumberOfIterations(Integer numberOfIterations)
+        {
+            this.numberOfIterations = numberOfIterations;
+            return this;
+        }
+
+        public Recommendation build()
+        {
+            return new Recommendation(master, algorithm, numberOfClusters, numberOfIterations);
+        }
+    }
+    //endregion
 }
