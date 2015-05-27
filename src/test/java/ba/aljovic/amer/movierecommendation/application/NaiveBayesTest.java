@@ -23,15 +23,14 @@ public class NaiveBayesTest
     public void testOneUser() throws IOException
     {
 
-        Double result = recommendation.evaluateRecommendationAlgorithm(
-                "user-ratings-training/addy_4.txt", "user-ratings-test/addy_4.txt");
+        Double result = recommendation.evaluateRecommendationAlgorithm("movie-data/addy_4.txt");
         System.out.println("Result: " + result);
     }
 
     @Test
     public void testManyUsers() throws IOException
     {
-        Double result = recommendation.evaluateManyUsers("user-ratings-training", "user-ratings-test");
+        Double result = recommendation.evaluateManyUsers("movie-data");
         System.out.println("Result: " + result);
     }
 }

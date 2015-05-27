@@ -23,14 +23,14 @@ public class SVMTest
     public void testOneUser() throws IOException
     {
         Double result = svmRecommendation.evaluateRecommendationAlgorithm(
-                "user-ratings-training/addy_4.txt", "user-ratings-test/addy_4.txt");
+                "user-ratings-training/addy_4.txt");
         System.out.println("Result: " + result);
     }
 
     @Test
     public void testManyUsers() throws IOException
     {
-        Double result = svmRecommendation.evaluateManyUsers("user-ratings-training", "user-ratings-test");
+        Double result = svmRecommendation.evaluateManyUsers("user-ratings-training");
         System.out.println("Result: " + result);
     }
 }

@@ -22,32 +22,30 @@ import java.util.List;
 
 public class Recommendation
 {
+    private final RecommendationAlgorithm algorithm;
+    private final Integer numberOfClusters;
+    private final Integer numberOfIterations;
+    private final Double testDataRatio;
     private JavaSparkContext sparkContext;
 
-    private final RecommendationAlgorithm algorithm;
-
-    private final Integer numberOfClusters;
-
-    private final Integer numberOfIterations;
-
-
-
     public Recommendation(final String master, final RecommendationAlgorithm algorithm, Integer numberOfClusters,
-                          Integer numberOfIterations)
+                          Integer numberOfIterations, Double testDataRatio)
     {
         this.algorithm = algorithm;
         this.numberOfClusters = numberOfClusters;
         this.numberOfIterations = numberOfIterations;
+        this.testDataRatio = testDataRatio;
 
         SparkConf configuration = new SparkConf().setAppName(algorithm.getName()).setMaster(master);
         this.sparkContext = new JavaSparkContext(configuration);
     }
 
-    public Double evaluateRecommendationAlgorithm(String training, String test)
+    public Double evaluateRecommendationAlgorithm(String data)
     {
         // Read files to RDD
-        JavaRDD<UserRating> trainingData = readUserRating(training);
-        JavaRDD<UserRating> testData = readUserRating(test);
+        JavaRDD<UserRating>[] splits = readUserRating(data).randomSplit(new double[]{1 - testDataRatio, testDataRatio});
+        JavaRDD<UserRating> trainingData = splits[0];
+        JavaRDD<UserRating> testData = splits[1];
 
         // Train KMeans model
         final KMeansModel ratingClusters = getKMeansModel(trainingData);
@@ -64,15 +62,14 @@ public class Recommendation
     }
 
 
-    public Double evaluateManyUsers(final String trainingFolderName, final String testFolderName) throws IOException
+    public Double evaluateManyUsers(final String trainingFolderName) throws IOException
     {
         final String trainingFolder = getClass().getClassLoader().getResource(trainingFolderName).getFile();
         return Files.walk(Paths.get(trainingFolder))
                 .filter(filePath -> filePath.toAbsolutePath().toFile().isFile())
                 .mapToDouble(filePath -> {
                     String username = filePath.getFileName().toString();
-                    return evaluateRecommendationAlgorithm(trainingFolderName + "/" + username,
-                            testFolderName + "/" + username);
+                    return evaluateRecommendationAlgorithm(trainingFolderName + "/" + username);
                 })
                 .average()
                 .getAsDouble();
@@ -118,6 +115,7 @@ public class Recommendation
         private String master = "local[1]";
         private Integer numberOfClusters = 5;
         private Integer numberOfIterations = 20;
+        private Double testDataRatio = 0.2;
 
         public RecommendationBuilder(RecommendationAlgorithm algorithm)
         {
@@ -127,6 +125,12 @@ public class Recommendation
         public RecommendationBuilder setMaster(String master)
         {
             this.master = master;
+            return this;
+        }
+
+        public RecommendationBuilder setTestDataRatio(Double testDataRatio)
+        {
+            this.testDataRatio = testDataRatio;
             return this;
         }
 
@@ -150,7 +154,7 @@ public class Recommendation
 
         public Recommendation build()
         {
-            return new Recommendation(master, algorithm, numberOfClusters, numberOfIterations);
+            return new Recommendation(master, algorithm, numberOfClusters, numberOfIterations, testDataRatio);
         }
     }
     //endregion
