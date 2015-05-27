@@ -4,11 +4,11 @@ import ba.aljovic.amer.movierecommendation.application.model.UserRating;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.clustering.KMeansModel;
 
-public class SVMAlgorithm implements RecommendationAlgorithm
+public class DecisionTreeAlgorithm implements RecommendationAlgorithm
 {
     Integer numberOfIterations;
 
-    public SVMAlgorithm(Integer numberOfIterations)
+    public DecisionTreeAlgorithm(Integer numberOfIterations)
     {
         this.numberOfIterations = numberOfIterations;
     }
@@ -22,6 +22,6 @@ public class SVMAlgorithm implements RecommendationAlgorithm
     @Override
     public String getName()
     {
-        return "SVM";
+        return "Decision Tree";
     }
 }
