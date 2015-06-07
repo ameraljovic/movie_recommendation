@@ -12,6 +12,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'spring-boot'
 apply plugin: 'idea'
+apply plugin: 'scala'
 
 version = '1.0'
 
@@ -26,6 +27,7 @@ dependencies {
         exclude module : 'spring-boot-starter-logging'
     }
     compile ('org.springframework.boot:spring-boot-starter-test')
+    compile ('org.scala-lang:scala-library:2.10.4')
 }
 
 idea {

@@ -22,7 +22,6 @@ public class NaiveBayesTest
     @Test
     public void testOneUser() throws IOException
     {
-
         Double result = recommendation.evaluateRecommendationAlgorithm("movie-data/addy_4.txt");
         System.out.println("Result: " + result);
     }
