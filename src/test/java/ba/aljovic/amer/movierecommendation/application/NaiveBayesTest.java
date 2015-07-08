@@ -2,6 +2,7 @@ package ba.aljovic.amer.movierecommendation.application;
 
 import ba.aljovic.amer.movierecommendation.Application;
 import ba.aljovic.amer.movierecommendation.application.algorithm.Recommendation;
+import ba.aljovic.amer.movierecommendation.application.model.Movie;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,11 @@ public class NaiveBayesTest
     {
         Double result = recommendation.evaluateManyUsers("movie-data");
         System.out.println("Result: " + result);
+    }
+
+    @Test
+    public void testMovieRecommendation() throws IOException
+    {
+        Movie[] movies = recommendation.recommendMovies("movie-data/addy_4.txt", "movies/movies.txt");
     }
 }

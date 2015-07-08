@@ -1,10 +1,11 @@
 package ba.aljovic.amer.movierecommendation.application.algorithm
 
 import java.io.File
+import java.lang.String._
 
-import ba.aljovic.amer.movierecommendation.application.model.UserRating
+import ba.aljovic.amer.movierecommendation.application.model.{Movie, UserRating}
 import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
-import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.linalg.Vectors._
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -16,7 +17,7 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
 
   def evaluateRecommendationAlgorithm(data: String): Double =
   {
-    val splits: Array[RDD[UserRating]] = readUserRating(data)
+    val splits: Array[RDD[UserRating]] = readUserRatings(data)
       .randomSplit(Array[Double](1 - testDataRatio, testDataRatio))
     val trainingData: RDD[UserRating] = splits(0)
     val testData: RDD[UserRating] = splits(1)
@@ -24,33 +25,60 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
     algorithm.evaluate(trainingData, testData, ratingClusters)
   }
 
-  def evaluateManyUsers(trainingFolderName: String): Double =
+  def recommendMovies(userData: String, moviesData: String): Array[Movie] =
   {
-    5
+    val userRatings: RDD[UserRating] = readUserRatings(userData)
+    val movies: RDD[Movie] = readMovies(moviesData)
+    algorithm.recommendMovies(userRatings, movies)
   }
 
-  private def readUserRating(fileName: String): RDD[UserRating] =
+  def evaluateManyUsers(trainingFolderName: String): Double =
   {
-    val trainingDataFile = new File(String.valueOf(getClass.getClassLoader.getResource(fileName)))
+    -1
+  }
+
+  private def readMovies(fileName: String): RDD[Movie] =
+  {
+    val moviesFile = new File(valueOf(getClass.getClassLoader.getResource(fileName)))
+    val data: RDD[String] = sparkContext.textFile(moviesFile.getPath)
+
+    data.map(line => {
+      val attributes = line.split("::")
+      val movieId = attributes(0).toInt
+      val movieName = attributes(1)
+      val genomes = attributes(2).split(":")
+      val vector = sparse(
+        genomes.length,
+        genomes.indices.toArray,
+        genomes.toList.map(g => g.toDouble).toArray
+      )
+      val data = new LabeledPoint(movieId, vector)
+      new Movie(movieId, movieName, data)
+    })
+  }
+
+  private def readUserRatings(fileName: String): RDD[UserRating] =
+  {
+    val trainingDataFile = new File(valueOf(getClass.getClassLoader.getResource(fileName)))
     val data: RDD[String] = sparkContext.textFile(trainingDataFile.getPath)
 
     data.map(line => {
       val attributes = line.split("::")
       val rating = attributes(2).toInt
       val genomes = attributes(3).split(":")
-      val vector = Vectors.sparse(
+      val vector = sparse(
         genomes.length,
         genomes.indices.toArray,
         genomes.toList.map(g => g.toDouble).toArray
       )
-      val data= new LabeledPoint(rating, vector)
+      val data = new LabeledPoint(rating, vector)
       new UserRating(rating, data)
     })
   }
 
   private def getKMeansModel(trainingData: RDD[UserRating]): KMeansModel =
   {
-    val trainingRatings = trainingData.map(ur=> Vectors.dense(ur.data.label))
+    val trainingRatings = trainingData.map(ur=> dense(ur.data.label))
     KMeans.train(trainingRatings, numberOfClusters, numberOfIterations)
   }
 }

@@ -13,5 +13,5 @@ class NaiveBayesConfig
   }
 
   @Bean
-  def naiveBayesAlgorithm: RecommendationAlgorithm = new NaiveBayesAlgorithm(1)
+  def naiveBayesAlgorithm: RecommendationAlgorithm = new NaiveBayesAlgorithm(1, 5, 9)
 }
