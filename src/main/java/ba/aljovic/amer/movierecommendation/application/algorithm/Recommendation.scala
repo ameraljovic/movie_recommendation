@@ -17,8 +17,7 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
 
   def evaluateRecommendationAlgorithm(data: String): Double =
   {
-    val splits: Array[RDD[UserRating]] = readUserRatings(data)
-      .randomSplit(Array[Double](1 - testDataRatio, testDataRatio))
+    val splits: Array[RDD[UserRating]] = readUserRatings(data).randomSplit(Array[Double](1 - testDataRatio, testDataRatio))
     val trainingData: RDD[UserRating] = splits(0)
     val testData: RDD[UserRating] = splits(1)
     val ratingClusters: KMeansModel = getKMeansModel(trainingData)
@@ -34,7 +33,7 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
 
   def evaluateManyUsers(trainingFolderName: String): Double =
   {
-    -1
+    ???
   }
 
   private def readMovies(fileName: String): RDD[Movie] =
@@ -78,7 +77,10 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
 
   private def getKMeansModel(trainingData: RDD[UserRating]): KMeansModel =
   {
-    val trainingRatings = trainingData.map(ur=> dense(ur.data.label))
+    val trainingRatings = trainingData.map(ur=>
+    {
+      dense(ur.data.label)
+    })
     KMeans.train(trainingRatings, numberOfClusters, numberOfIterations)
   }
 }
