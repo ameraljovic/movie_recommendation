@@ -38,6 +38,5 @@ public class DecisionTreeTest
     public void testMovieRecommendation() throws IOException
     {
         Movie[] movies = recommendation.recommendMovies("movie-data/addy_4.txt", "movies/movies.txt");
-
     }
 }

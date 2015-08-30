@@ -4,6 +4,8 @@ import java.io.File
 import java.lang.String._
 
 import ba.aljovic.amer.movierecommendation.application.model.{Movie, UserRating}
+import ba.aljovic.amer.movierecommendation.utils.Utils
+import org.apache.commons.io.FileUtils
 import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
 import org.apache.spark.mllib.linalg.Vectors._
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -15,9 +17,10 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
 {
   val sparkContext = new SparkContext(new SparkConf().setAppName(algorithm.name()).setMaster(master))
 
-  def evaluateRecommendationAlgorithm(data: String): Double =
+  def evaluateRecommendationAlgorithm(user: String): Double =
   {
-    val splits: Array[RDD[UserRating]] = readUserRatings(data).randomSplit(Array[Double](1 - testDataRatio, testDataRatio))
+    validate(user)
+    val splits: Array[RDD[UserRating]] = readUserRatings(user).randomSplit(Array[Double](1 - testDataRatio, testDataRatio))
     val trainingData: RDD[UserRating] = splits(0)
     val testData: RDD[UserRating] = splits(1)
     val ratingClusters: KMeansModel = getKMeansModel(trainingData)
@@ -33,8 +36,29 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
 
   def evaluateManyUsers(trainingFolderName: String): Double =
   {
-    ???
+    val usersDirectory = new File(Utils.loadFilePath(trainingFolderName))
+    val users = FileUtils.listFiles(usersDirectory, null, false).iterator()
+
+    var countUsers = 0
+    var result = 0D
+    while (users.hasNext)
+    {
+      val user = users.next()
+      val username = Utils.getLastPartFromPath(user)
+      try
+      {
+        result += evaluateRecommendationAlgorithm(trainingFolderName + "/" + username)
+      }
+      catch
+        {
+          case e: NumberFormatException => println(e.getMessage)
+        }
+      countUsers += 1
+    }
+    result / countUsers
   }
+
+
 
   private def readMovies(fileName: String): RDD[Movie] =
   {
@@ -58,20 +82,27 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
 
   private def readUserRatings(fileName: String): RDD[UserRating] =
   {
-    val trainingDataFile = new File(valueOf(getClass.getClassLoader.getResource(fileName)))
+    val trainingDataFile = new File(Utils.loadFilePath(fileName))
     val data: RDD[String] = sparkContext.textFile(trainingDataFile.getPath)
 
     data.map(line => {
-      val attributes = line.split("::")
-      val rating = attributes(2).toInt
-      val genomes = attributes(3).split(":")
-      val vector = sparse(
-        genomes.length,
-        genomes.indices.toArray,
-        genomes.toList.map(g => g.toDouble).toArray
-      )
-      val data = new LabeledPoint(rating, vector)
-      new UserRating(rating, data)
+      try
+      {
+        val attributes = line.split("::")
+        val rating = attributes(2).toInt
+        val genomes = attributes(3).split(":")
+        val vector = sparse(
+          genomes.length,
+          genomes.indices.toArray,
+          genomes.toList.map(g => g.toDouble).toArray
+        )
+        val data = new LabeledPoint(rating, vector)
+        new UserRating(rating, data)
+      }
+      catch
+        {
+          case e: Exception => println(e.getMessage); new UserRating(9, new LabeledPoint(1D, null))
+        }
     })
   }
 
@@ -82,5 +113,10 @@ case class Recommendation(algorithm: RecommendationAlgorithm, master: String = "
       dense(ur.data.label)
     })
     KMeans.train(trainingRatings, numberOfClusters, numberOfIterations)
+  }
+
+  private def validate(username: String): Unit =
+  {
+    if (username.contains(":")) throw new NumberFormatException("For input string: ':")
   }
 }
